@@ -323,6 +323,97 @@
             border-color: rgba(0, 212, 255, 0.3);
             color: #00d4ff;
         }
+
+        .help-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+
+        .help-toggle {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #888;
+            transition: all 0.2s;
+        }
+
+        .help-toggle:hover {
+            background: rgba(255, 255, 255, 0.02);
+            color: #00d4ff;
+        }
+
+        .help-toggle-text {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .help-toggle-icon {
+            transition: transform 0.2s;
+        }
+
+        .help-toggle.open .help-toggle-icon {
+            transform: rotate(90deg);
+        }
+
+        .help-content {
+            display: none;
+            padding: 0 1.5rem 1.5rem;
+        }
+
+        .help-content.visible {
+            display: block;
+        }
+
+        .help-content h3 {
+            color: #00d4ff;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .help-content h3:first-child {
+            margin-top: 0;
+        }
+
+        .help-content p {
+            color: #aaa;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .help-content ul {
+            color: #aaa;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            padding-left: 1.2rem;
+        }
+
+        .help-content li {
+            margin-bottom: 0.3rem;
+        }
+
+        .help-content code {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00d4ff;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+        }
+
+        .help-content .output-term {
+            color: #9b59b6;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -331,6 +422,42 @@
             <h1>Query Alchemy</h1>
             <p class="subtitle">Transform natural language into structured data</p>
         </header>
+
+        <div class="help-section">
+            <div class="help-toggle" id="helpToggle">
+                <span class="help-toggle-text">
+                    <span class="help-toggle-icon">&#9654;</span>
+                    How to use this tool
+                </span>
+            </div>
+            <div class="help-content" id="helpContent">
+                <h3>Getting Started</h3>
+                <p>Query Alchemy parses natural language queries and extracts structured data that can be used to build database queries, API calls, or search filters.</p>
+
+                <h3>How to Use</h3>
+                <ul>
+                    <li>Type your query in plain English in the text box below</li>
+                    <li>Click <code>Parse Query</code> or press <code>Ctrl+Enter</code> to submit</li>
+                    <li>Try the example chips to see how different queries are parsed</li>
+                </ul>
+
+                <h3>Writing Effective Queries</h3>
+                <ul>
+                    <li>Be specific about what you're looking for (e.g., "customers" vs "active customers in New York")</li>
+                    <li>Include filters like dates, amounts, or status values</li>
+                    <li>Use natural phrasing: "Show me...", "Find all...", "How many...", "List..."</li>
+                </ul>
+
+                <h3>Understanding the Output</h3>
+                <ul>
+                    <li><span class="output-term">Intent</span> &mdash; The type of operation (search, count, list, compare, etc.)</li>
+                    <li><span class="output-term">Action</span> &mdash; The specific operation to perform</li>
+                    <li><span class="output-term">Entities</span> &mdash; Extracted values like dates, names, amounts, and statuses</li>
+                    <li><span class="output-term">Keywords</span> &mdash; Key terms identified in your query</li>
+                    <li><span class="output-term">Confidence</span> &mdash; How certain the parser is about the interpretation</li>
+                </ul>
+            </div>
+        </div>
 
         <div class="input-section">
             <label for="query">Enter your query</label>
@@ -401,6 +528,16 @@
         const errorDiv = document.getElementById('error');
         const jsonToggle = document.getElementById('jsonToggle');
         const jsonOutput = document.getElementById('jsonOutput');
+        const helpToggle = document.getElementById('helpToggle');
+        const helpContent = document.getElementById('helpContent');
+
+        // Help toggle
+        helpToggle.addEventListener('click', () => {
+            const isVisible = helpContent.classList.contains('visible');
+            helpContent.classList.toggle('visible');
+            helpToggle.classList.toggle('open');
+            helpToggle.querySelector('.help-toggle-icon').innerHTML = isVisible ? '&#9654;' : '&#9660;';
+        });
 
         // Example chips
         document.querySelectorAll('.example-chip').forEach(chip => {
