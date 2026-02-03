@@ -239,7 +239,15 @@
             color: #aaa;
             white-space: pre-wrap;
             word-wrap: break-word;
+            line-height: 1.5;
         }
+
+        /* JSON syntax highlighting */
+        .json-key { color: #9b59b6; }
+        .json-string { color: #2ecc71; }
+        .json-number { color: #00d4ff; }
+        .json-boolean { color: #e74c3c; }
+        .json-null { color: #888; font-style: italic; }
 
         .json-toggle {
             color: #888;
@@ -463,6 +471,33 @@
             }
         });
 
+        function syntaxHighlightJson(obj) {
+            const json = JSON.stringify(obj, null, 2);
+            return json.replace(
+                /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+                (match) => {
+                    let cls = 'json-number';
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'json-key';
+                        } else {
+                            cls = 'json-string';
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'json-boolean';
+                    } else if (/null/.test(match)) {
+                        cls = 'json-null';
+                    }
+                    // Escape HTML entities to prevent XSS
+                    const escaped = match
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+                    return `<span class="${cls}">${escaped}</span>`;
+                }
+            );
+        }
+
         function displayResult(data) {
             // Confidence badge
             const confidence = data.confidence;
@@ -487,8 +522,8 @@
                 `<span class="keyword-tag">${k}</span>`
             ).join('');
 
-            // Full JSON
-            document.getElementById('jsonContent').textContent = JSON.stringify(data, null, 2);
+            // Full JSON with syntax highlighting
+            document.getElementById('jsonContent').innerHTML = syntaxHighlightJson(data);
 
             // Show result
             resultSection.classList.add('visible');
