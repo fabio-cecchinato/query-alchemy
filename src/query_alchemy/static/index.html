@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Query Alchemy</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d4ff, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        .input-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #aaa;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        textarea::placeholder {
+            color: #666;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        button {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #00d4ff, #9b59b6);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .result-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+        }
+
+        .result-section.visible {
+            display: block;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .result-header h2 {
+            font-size: 1.2rem;
+            color: #00d4ff;
+        }
+
+        .confidence-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .confidence-high {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .confidence-medium {
+            background: rgba(241, 196, 15, 0.2);
+            color: #f1c40f;
+        }
+
+        .confidence-low {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-card {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .result-card h3 {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-card .value {
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .intent-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(155, 89, 182, 0.3);
+            color: #bb8fce;
+            font-weight: 500;
+        }
+
+        .entities-list, .keywords-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .entity-tag {
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            background: rgba(0, 212, 255, 0.15);
+            color: #00d4ff;
+        }
+
+        .keyword-tag {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: #aaa;
+        }
+
+        .json-output {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            overflow-x: auto;
+        }
+
+        .json-output pre {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            color: #aaa;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .json-toggle {
+            color: #888;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .json-toggle:hover {
+            color: #00d4ff;
+        }
+
+        .error-message {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #888;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .examples {
+            margin-top: 1rem;
+        }
+
+        .examples-title {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .example-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .example-chip {
+            padding: 0.4rem 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .example-chip:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: rgba(0, 212, 255, 0.3);
+            color: #00d4ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Query Alchemy</h1>
+            <p class="subtitle">Transform natural language into structured data</p>
+        </header>
+
+        <div class="input-section">
+            <label for="query">Enter your query</label>
+            <textarea
+                id="query"
+                placeholder="e.g., Show me all recorded calls from yesterday that lasted more than 10 minutes"
+            ></textarea>
+
+            <div class="examples">
+                <div class="examples-title">Try an example:</div>
+                <div class="example-chips">
+                    <span class="example-chip" data-query="Show me all recorded calls from yesterday">Recorded calls</span>
+                    <span class="example-chip" data-query="List customers in New York with active status">Active customers</span>
+                    <span class="example-chip" data-query="How many users signed up last week?">User signups</span>
+                    <span class="example-chip" data-query="Find orders over $500 from this month">Large orders</span>
+                </div>
+            </div>
+
+            <div class="button-row">
+                <button id="parseBtn" class="btn-primary">Parse Query</button>
+                <button id="clearBtn" class="btn-secondary">Clear</button>
+            </div>
+        </div>
+
+        <div id="result" class="result-section">
+            <div class="result-header">
+                <h2>Parsed Result</h2>
+                <span id="confidenceBadge" class="confidence-badge"></span>
+            </div>
+
+            <div class="result-grid">
+                <div class="result-card">
+                    <h3>Intent</h3>
+                    <div class="value"><span id="intentValue" class="intent-badge"></span></div>
+                </div>
+                <div class="result-card">
+                    <h3>Action</h3>
+                    <div class="value" id="actionValue"></div>
+                </div>
+            </div>
+
+            <div class="result-card" style="margin-bottom: 1rem;">
+                <h3>Entities</h3>
+                <div id="entitiesValue" class="entities-list"></div>
+            </div>
+
+            <div class="result-card" style="margin-bottom: 1rem;">
+                <h3>Keywords</h3>
+                <div id="keywordsValue" class="keywords-list"></div>
+            </div>
+
+            <div class="json-toggle" id="jsonToggle">
+                <span>&#9654;</span> Show full JSON response
+            </div>
+            <div class="json-output" id="jsonOutput" style="display: none;">
+                <pre id="jsonContent"></pre>
+            </div>
+        </div>
+
+        <div id="error" class="error-message" style="display: none;"></div>
+    </div>
+
+    <script>
+        const queryInput = document.getElementById('query');
+        const parseBtn = document.getElementById('parseBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const resultSection = document.getElementById('result');
+        const errorDiv = document.getElementById('error');
+        const jsonToggle = document.getElementById('jsonToggle');
+        const jsonOutput = document.getElementById('jsonOutput');
+
+        // Example chips
+        document.querySelectorAll('.example-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                queryInput.value = chip.dataset.query;
+                queryInput.focus();
+            });
+        });
+
+        // Parse button
+        parseBtn.addEventListener('click', async () => {
+            const query = queryInput.value.trim();
+            if (!query) {
+                showError('Please enter a query');
+                return;
+            }
+
+            // Show loading state
+            parseBtn.disabled = true;
+            parseBtn.innerHTML = '<span class="loading"><span class="spinner"></span> Parsing...</span>';
+            hideError();
+            resultSection.classList.remove('visible');
+
+            try {
+                const response = await fetch('/parse', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || data.error || 'Failed to parse query');
+                }
+
+                displayResult(data);
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                parseBtn.disabled = false;
+                parseBtn.textContent = 'Parse Query';
+            }
+        });
+
+        // Clear button
+        clearBtn.addEventListener('click', () => {
+            queryInput.value = '';
+            resultSection.classList.remove('visible');
+            hideError();
+            jsonOutput.style.display = 'none';
+            queryInput.focus();
+        });
+
+        // JSON toggle
+        jsonToggle.addEventListener('click', () => {
+            const isVisible = jsonOutput.style.display !== 'none';
+            jsonOutput.style.display = isVisible ? 'none' : 'block';
+            jsonToggle.innerHTML = isVisible
+                ? '<span>&#9654;</span> Show full JSON response'
+                : '<span>&#9660;</span> Hide full JSON response';
+        });
+
+        // Enter key to submit
+        queryInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                parseBtn.click();
+            }
+        });
+
+        function displayResult(data) {
+            // Confidence badge
+            const confidence = data.confidence;
+            const confidenceBadge = document.getElementById('confidenceBadge');
+            confidenceBadge.textContent = `${(confidence * 100).toFixed(0)}% confidence`;
+            confidenceBadge.className = 'confidence-badge ' +
+                (confidence >= 0.8 ? 'confidence-high' : confidence >= 0.5 ? 'confidence-medium' : 'confidence-low');
+
+            // Intent and action
+            document.getElementById('intentValue').textContent = data.intent;
+            document.getElementById('actionValue').textContent = data.action;
+
+            // Entities
+            const entitiesDiv = document.getElementById('entitiesValue');
+            entitiesDiv.innerHTML = data.entities.map(e =>
+                `<span class="entity-tag">${e.type}: ${e.value}${e.normalized ? ` (${e.normalized})` : ''}</span>`
+            ).join('');
+
+            // Keywords
+            const keywordsDiv = document.getElementById('keywordsValue');
+            keywordsDiv.innerHTML = data.keywords.map(k =>
+                `<span class="keyword-tag">${k}</span>`
+            ).join('');
+
+            // Full JSON
+            document.getElementById('jsonContent').textContent = JSON.stringify(data, null, 2);
+
+            // Show result
+            resultSection.classList.add('visible');
+        }
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            errorDiv.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
